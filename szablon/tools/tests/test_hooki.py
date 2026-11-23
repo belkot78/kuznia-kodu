@@ -80,14 +80,32 @@ def test_skan_dotyczy_indeksu_a_nie_katalogu_roboczego(repo):
     assert git(repo, "commit", "-q", "-m", "test", sprawdz=False).returncode == 0
 
 
+def path_bez_pythona(tmp_path):
+    """PATH, w ktorym sh i git dzialaja, a interpretera Pythona nie ma (niezaleznie od systemu).
+
+    Windows (Git Bash): katalogi sh i git nie maja pythona, wiec wystarcza same. Linux/macOS: sh i git leza w
+    katalogu z python3, wiec budujemy osobny katalog z dowiazaniami tylko do potrzebnych polecen."""
+    sh, git_exe = shutil.which("sh"), shutil.which("git")
+    katalogi = {str(Path(sh).parent), str(Path(git_exe).parent)}
+    nazwy_pythona = ("python", "python3", "py")
+    ma_pythona = any((Path(k) / n).exists() or (Path(k) / (n + ".exe")).exists() for k in katalogi for n in nazwy_pythona)
+    if not ma_pythona:
+        return os.pathsep.join(sorted(katalogi))
+    bin_ = tmp_path / "bin-bez-pythona"
+    bin_.mkdir()
+    for nazwa in ("sh", "git", "basename", "dirname"):
+        zrodlo = shutil.which(nazwa)
+        if zrodlo:
+            (bin_ / nazwa).symlink_to(zrodlo)
+    return str(bin_)
+
+
 def test_brak_interpretera_blokuje_commit(repo, tmp_path):
     zapisz(repo, "src/ok.py", "x = 1\n")
     git(repo, "add", "-f", "src/ok.py")
     sh = shutil.which("sh")
     w = subprocess.run([sh, str(repo / ".githooks" / "pre-commit")], cwd=str(repo), capture_output=True,
-                       text=True, env={"PATH": os.pathsep.join([str(Path(sh).parent),
-                                                                str(Path(shutil.which("git")).parent)]),
-                                       "HOME": str(tmp_path / "pusty")})
+                       text=True, env={"PATH": path_bez_pythona(tmp_path), "HOME": str(tmp_path / "pusty")})
     assert w.returncode != 0 and "BLAD INTERPRETERA" in w.stderr
 
 

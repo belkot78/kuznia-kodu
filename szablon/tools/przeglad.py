@@ -151,7 +151,7 @@ def nowe_pliki(root: Path, pliki: list[str], od: str | None) -> list[str]:
         up = _git(root, "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}")
         if up and up.strip():
             ref = up.strip()
-    zmienione = _git(root, "diff", "-z", "--name-only", "--diff-filter=ACMR", ref)
+    zmienione = _git(root, "diff", "-z", "--name-only", "--diff-filter=ACMRT", ref)
     nieslad = _git(root, "ls-files", "-z", "-o", "--exclude-standard")
     if zmienione is None or nieslad is None:
         raise BladGit(f"git diff/ls-files nie powiodlo sie (ref {ref}): nie mozna ustalic nowych plikow")
@@ -175,8 +175,10 @@ def _czytaj_tekst(sciezka: Path) -> str | None:
 
 
 def pliki_z_indeksu(root: Path) -> list[str]:
-    """Pliki dodane do indeksu (git add): ACM."""
-    w = _git(root, "diff", "--cached", "-z", "--name-only", "--diff-filter=ACM")
+    """Pliki dodane do indeksu (git add): ACMRT (dodane, skopiowane, zmienione, przemianowane, zmiana typu).
+
+    R i T muszą być na liście: plik przemianowany z dopisanym sekretem inaczej omijałby pre-commit."""
+    w = _git(root, "diff", "--cached", "-z", "--name-only", "--diff-filter=ACMRT")
     if w is None:
         raise BladGit("git diff --cached nie powiodlo sie: nie mozna ustalic plikow w indeksie")
     return sorted(l for l in w.split("\0") if l)

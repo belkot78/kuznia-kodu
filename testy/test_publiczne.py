@@ -36,10 +36,24 @@ SAMOREFERENCJA = {"testy/test_publiczne.py"}
 
 
 def pliki_repo():
-    w = subprocess.run(["git", "-c", f"safe.directory={KORZEN.as_posix()}", "-C", str(KORZEN), "ls-files", "-co",
-                        "--exclude-standard"], capture_output=True, text=True, encoding="utf-8")
-    assert w.returncode == 0, w.stderr
-    return sorted(p for p in w.stdout.splitlines() if p and (KORZEN / p).is_file())
+    # -z: bez tego git cytuje sciezki z polskimi znakami ("za\305\274\303\263\305\202\304\207.py"), a plik
+    # wypadalby po cichu z kontroli repo publicznego (ten sam blad poprawiono w tools/przeglad.py)
+    w = subprocess.run(["git", "-c", f"safe.directory={KORZEN.as_posix()}", "-C", str(KORZEN), "ls-files", "-z",
+                        "-co", "--exclude-standard"], capture_output=True)
+    assert w.returncode == 0, w.stderr.decode("utf-8", errors="replace")
+    sciezki = w.stdout.decode("utf-8").split("\0")
+    return sorted(p for p in sciezki if p and (KORZEN / p).is_file())
+
+
+def test_pliki_repo_zwraca_pliki_z_polskimi_znakami_w_nazwie():
+    """Regresja: lista plikow musi zawierac (nieslledzony) plik z polska nazwa; git bez -z cytuje takie sciezki."""
+    rel = "testy/_tmp_zażółć.txt"
+    plik = KORZEN / rel
+    plik.write_text("x\n", encoding="utf-8")
+    try:
+        assert rel in pliki_repo()
+    finally:
+        plik.unlink()
 
 
 def tresc(rel):

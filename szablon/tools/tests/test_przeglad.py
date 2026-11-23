@@ -171,8 +171,11 @@ def test_wywolania_poza_katalogami_d_sa_pomijane(tmp_path):
 
 # ---------------------------------------------------------------- (a) testy i calosc
 def git(root, *argumenty):
+    # core.quotePath=true: jawnie, zeby testy z polskimi nazwami lapaly regresje (bez -z git cytuje takie sciezki)
+    # takze przy globalnym quotePath=false
     return subprocess.run(["git", "-C", str(root), "-c", "user.name=t", "-c", "user.email=t@example.org",
-                           *argumenty], capture_output=True, text=True, check=True)
+                           "-c", "core.quotePath=true", *argumenty],
+                          capture_output=True, text=True, encoding="utf-8", check=True)
 
 
 def test_testy_tylko_z_bialej_listy(tmp_path):
@@ -251,3 +254,52 @@ def test_sekret_w_pliku_z_polska_nazwa_jest_wykryty_w_indeksie(tmp_path):
     zapisz(tmp_path, rel, "KLUCZ = '" + "sk-ant-" + CIAG + "'\n")
     git(tmp_path, "add", rel)
     assert not przeglad.uruchom(tmp_path, "b", wypis=lambda *_: None, indeks=True)
+
+
+def test_nowe_pliki_z_polska_nazwa_sa_kontrolowane(tmp_path):
+    """nowe_pliki czyta `git diff -z` i `git ls-files -z`; bez -z polska nazwa wypadalaby z listy (fail-open)."""
+    git(tmp_path, "init", "-q")
+    zapisz(tmp_path, "a.py", "x = 1\n")
+    git(tmp_path, "add", "a.py")
+    git(tmp_path, "commit", "-q", "-m", "x")
+    rel_zmieniony = "src/zażółć.py"
+    rel_nieslad = "src/gęślą.py"
+    zapisz(tmp_path, rel_zmieniony, "x = 1\n")
+    git(tmp_path, "add", rel_zmieniony)
+    git(tmp_path, "commit", "-q", "-m", "polska nazwa")
+    zapisz(tmp_path, rel_zmieniony, "x = 2\n")        # zmieniony wzgledem HEAD
+    zapisz(tmp_path, rel_nieslad, "y = 1\n")          # nieslozony w indeksie (nowy plik)
+    pliki = przeglad.lista_plikow(tmp_path)
+    assert przeglad.nowe_pliki(tmp_path, pliki, None) == sorted([rel_zmieniony, rel_nieslad])
+
+
+def test_przemianowany_plik_z_sekretem_jest_wykryty_w_indeksie(tmp_path):
+    """Filtr ACM pomijal R (rename): plik przemianowany z dopisanym sekretem omijal pre-commit."""
+    git(tmp_path, "init", "-q")
+    baza = "".join(f"linia_{i} = {i}\n" for i in range(12))
+    zapisz(tmp_path, "src/stary.py", baza)
+    git(tmp_path, "add", "src/stary.py")
+    git(tmp_path, "commit", "-q", "-m", "x")
+    git(tmp_path, "mv", "src/stary.py", "src/nowy.py")
+    zapisz(tmp_path, "src/nowy.py", baza + "KLUCZ = '" + "sk-ant-" + CIAG + "'\n")
+    git(tmp_path, "add", "src/nowy.py")
+    assert przeglad.pliki_z_indeksu(tmp_path) == ["src/nowy.py"]
+    assert not przeglad.uruchom(tmp_path, "b", wypis=lambda *_: None, indeks=True)
+
+
+@pytest.mark.parametrize("funkcja", ["indeks", "nowe"])
+def test_filtry_diff_obejmuja_rename_i_zmiane_typu(tmp_path, monkeypatch, funkcja):
+    """T (zmiana typu, np. plik -> symlink) trudno wywolac na Windowsie, wiec sprawdzamy argumenty gita."""
+    argumenty = []
+
+    def falszywy_git(root, *a):
+        argumenty.append(a)
+        return ""
+    monkeypatch.setattr(przeglad, "_git", falszywy_git)
+    monkeypatch.setattr(przeglad, "_jest_repo", lambda root: True)
+    if funkcja == "indeks":
+        przeglad.pliki_z_indeksu(tmp_path)
+    else:
+        przeglad.nowe_pliki(tmp_path, [], "HEAD")
+    filtry = [x for a in argumenty for x in a if str(x).startswith("--diff-filter=")]
+    assert filtry and all("R" in f and "T" in f for f in filtry), filtry
