@@ -164,3 +164,17 @@ def test_profil_maszyny_ma_wymagane_pola(nazwa):
 
 def test_profil_legion_oznacza_braki_jako_open_question():
     assert "OPEN QUESTION" in (KORZEN / "maszyny" / "legion.md").read_text(encoding="utf-8")
+
+
+def test_windows_ps1_test_blokada_liczy_tylko_reguly_jawne(ps):
+    """Odziedziczony Deny FullControl z katalogu projektow nie moze udawac blokady (recenzja PK-M0.1, bloker)."""
+    kod = kod_bez_komentarzy(ps)
+    blok = kod[kod.index("function Test-Blokada"):kod.index("function Test-Wlasciciel")]
+    assert "Get-RegulyAgenta $sciezka $true" in blok
+    assert "function Get-RegulyAgenta([string]$sciezka, [bool]$jawne = $false)" in kod
+
+
+def test_windows_ps1_porownuje_tez_szablon_i_maszyny_w_pluginie(ps):
+    linia = next(l for l in ps.splitlines() if l.startswith("$PodkatalogiPluginu"))
+    for katalog in ("agents", "skills", "hooks", "szablon", "szablon-uzytkownika", "maszyny"):
+        assert f"'{katalog}'" in linia, katalog

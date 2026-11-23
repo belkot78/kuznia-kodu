@@ -39,3 +39,14 @@ Zlecenie PK-M0.1, etap 4. Numeracja jak wyżej (numer w raporcie recenzenta PK-M
 - r2 #1: POPRAWIONA. `git ls-files -z` i dekodowanie UTF-8 w `test_publiczne.py`, test regresji z polską nazwą pliku.
 - r2 #2: POPRAWIONA. Test `nowe_pliki` z polskimi nazwami (zmieniony i nowy plik).
 - r2 #3: POPRAWIONA. Helper `git` w `test_przeglad.py` ustawia `-c core.quotePath=true`.
+
+## Z PK-M0.1 (23.11.2026)
+
+Uwagi nieblokujące z recenzji pakietu PK-M0.1 (runda 1) i wnioski z bramki końcowej.
+
+- [UWAGA] szablon/tools/tests/test_przeglad.py:136 (bramka, `przeglad.py` kontrola c): atrapa `https://obcy.invalid/api` w istniejącym teście daje FAIL kontroli (c) przy uruchomieniu silnika na repo kuźni (`--root ..`); w repo projektów plik jest wyłączony z kontroli albo ma własną konfigurację. Kuźnia nie ma własnego `tools/przeglad.py`; do rozważenia wyjątek w `przeglad_konfig.py` szablonu albo atrapa składana z fragmentów (otwarta).
+- [UWAGA] szablon-uzytkownika/profile.ps1 (recenzja #5): czerwony znak zachęty nie działa przy polityce wykonywania `Restricted`; opisane w README jako `OPEN QUESTION` (otwarta).
+- [UWAGA] instaluj/windows.ps1 (recenzja #6): domyślne `-DozwoloneFolderyC` nie obejmuje `$Recycle.Bin`, `PerfLogs`, `Intel`; pierwszy `-TestAgenta` może dać `[BLAD]`; opisane w README (otwarta, do ustalenia po pierwszym teście).
+- [SUGESTIA] testy/test_publiczne.py (recenzja #7): test regresji tworzy plik w drzewie repo (`testy/_tmp_*.txt`), a nie w `tmp_path`; przerwany test zostawi nieśledzony plik (otwarta).
+- [SUGESTIA] szablon/.gitattributes (recenzja #8): ogólna reguła `* text=auto eol=lf` po szczegółowej `.githooks/* text eol=lf`; skutek ten sam (LF), kolejność zgodna z głównym `.gitattributes` (zamknięta bez zmiany).
+- [UWAGA] docs/recenzja-projekt.md, CLAUDE.md (recenzja #4): pliki nie były w zakresie zlecenia, założone na wyraźne polecenie Pawła z zatwierdzenia planu; treść klas blokerów wymaga akceptacji Pawła przed pushem (otwarta).

@@ -177,8 +177,10 @@ function Get-RegulyAgenta([string]$sciezka, [bool]$jawne = $false) {
     }
 }
 
+# Liczy tylko reguly JAWNE na obiekcie. Odziedziczony zakaz z katalogu projektow (wzorzec -InstalujKatalogProjektow)
+# ma te same prawa, ale nie chroni: odziedziczone Allow Modify z _repo stoi w ACL przed nim. Prawda o dostepie: -TestAgenta.
 function Test-Blokada([string]$sciezka) {
-    $reguly = @(Get-RegulyAgenta $sciezka | Where-Object { $_.AccessControlType -eq 'Deny' })
+    $reguly = @(Get-RegulyAgenta $sciezka $true | Where-Object { $_.AccessControlType -eq 'Deny' })
     foreach ($r in $reguly) {
         if (([int]$r.FileSystemRights -band [int]$PrawaZakazu) -eq [int]$PrawaZakazu) { return $true }
     }
@@ -263,7 +265,7 @@ function Get-KatalogPluginuWCache([string]$profilAgenta) {
     return @{ Wersja = $wersja; Katalog = (Join-Path (Join-Path $baza 'kuznia') $wersja) }
 }
 
-$PodkatalogiPluginu = @('.claude-plugin', 'agents', 'skills', 'hooks')
+$PodkatalogiPluginu = @('.claude-plugin', 'agents', 'skills', 'hooks', 'szablon', 'szablon-uzytkownika', 'maszyny')
 
 function Get-PlikiPluginu([string]$korzen) {
     foreach ($p in $PodkatalogiPluginu) {

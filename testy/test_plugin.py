@@ -170,3 +170,19 @@ def test_skill_pakiet_ma_konwencje_krokow_pawla_i_lacznik_z_blokadami():
     _, tresc = frontmatter(KORZEN / "skills" / "pakiet" / "SKILL.md")
     assert "▶ WKLEJ" in tresc and "👁 POWINIENEŚ ZOBACZYĆ" in tresc
     assert "-TestAgenta" in tresc and "ponowne założenie blokad" in tresc
+
+
+def test_launcher_pomija_niedzialajacy_interpreter(tmp_path):
+    """Zaslepka (np. python3 ze sklepu Microsoft) jest znaleziona, ale sie nie uruchamia: launcher idzie dalej."""
+    sh = shutil.which("sh")
+    if not sh:
+        pytest.skip("brak sh w PATH")
+    tresc = (KORZEN / "hooks" / "uruchom.sh").read_text(encoding="utf-8")
+    assert '"$kandydat" -c "import sys"' in tresc
+    zaslepka = tmp_path / "python3"
+    zaslepka.write_text("#!/bin/sh\nexit 9\n", encoding="utf-8", newline="\n")
+    zaslepka.chmod(0o755)
+    env = {**os.environ, "PATH": str(tmp_path) + os.pathsep + os.environ["PATH"], "CLAUDE_PROJECT_DIR": str(tmp_path)}
+    w = subprocess.run([sh, str(KORZEN / "hooks" / "uruchom.sh"), "post"], input='{"tool_input": {}}',
+                       capture_output=True, text=True, cwd=str(tmp_path), env=env)
+    assert w.returncode == 0, w.stderr

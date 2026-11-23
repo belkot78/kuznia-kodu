@@ -38,6 +38,10 @@ Pełna kolejność jest w `METODA.md`, sekcja 10. Skrót:
 6. **Test jako agent (zalogowany jako `claude-agent`):** `instaluj\windows.ps1 -TestAgenta`. Blokada znika, gdy git zapisze plik od nowa (łatka, `pull`, `checkout`): po każdej takiej zmianie zakładasz blokady ponownie i powtarzasz test.
 7. **Nowa sesja Claude Code:** `/status` (model Sonnet), sprawdzenie recenzenta (niżej), `/kuznia:status`, potem `/kuznia:pakiet PK-00`.
 
+Uwagi do kroku 6 (`OPEN QUESTION`, do potwierdzenia przy pierwszym teście):
+- Czerwony znak zachęty z `profile.ps1` pojawi się tylko, gdy polityka wykonywania konta agenta pozwala wczytać profil (domyślnie na Windows 11 jest `Restricted`; skrypt jej nie zmienia). Gdy znaku brak, polityka konta agenta to decyzja Pawła; przed testem ratuje `whoami` na początku `-TestAgenta`, który przerywa test na innym koncie.
+- Domyślna lista `-DozwoloneFolderyC` (`Windows`, `Program Files`, `Program Files (x86)`, `ProgramData`, `Users`) nie obejmuje m.in. `$Recycle.Bin`, `PerfLogs`, `Intel`. Pierwszy `-TestAgenta` może więc dać kilka `[BLAD]` i kod wyjścia 1 mimo poprawnej izolacji: dopisz takie foldery do `-DozwoloneFolderyC` albo zamknij je dla agenta.
+
 Przed pierwszym uruchomieniem `windows.ps1` sprawdź składnię parserem (konto Belkot, PowerShell): `[System.Management.Automation.Language.Parser]::ParseFile('instaluj\windows.ps1', [ref]$null, [ref]$e)`; lista błędów `$e` ma być pusta.
 
 ## Sprawdzenie recenzenta (po instalacji i po każdej aktualizacji pluginu)

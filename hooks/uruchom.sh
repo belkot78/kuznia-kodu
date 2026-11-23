@@ -6,7 +6,8 @@
 # Brak interpretera: komunikat na stderr i kod 1 (blad nieblokujacy: Claude Code pokaze powiadomienie).
 KATALOG=$(dirname "$0")
 for kandydat in python3 python py; do
-    if command -v "$kandydat" >/dev/null 2>&1; then
+    # Sprawdzamy, czy kandydat naprawde dziala: na Windows python3 bywa zaslepka Microsoft Store (znaleziona, ale nie uruchamia sie).
+    if command -v "$kandydat" >/dev/null 2>&1 && "$kandydat" -c "import sys" >/dev/null 2>&1; then
         exec "$kandydat" "$KATALOG/kontrola.py" "$@"
     fi
 done
