@@ -4,3 +4,6 @@ szablon/.githooks/* text eol=lf
 instaluj/*.sh text eol=lf
 # Lacznik (git apply) musi miec LF, inaczej kontekst sie nie zgadza
 *.patch text eol=lf
+
+# Wszystkie pliki tekstowe zawsze LF (CRLF psuje naglowek agenta pluginu)
+* text=auto eol=lf
