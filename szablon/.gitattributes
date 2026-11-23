@@ -1,0 +1,2 @@
+# Skrypty sh instalowane jako hooki git: zawsze LF (CRLF psuje shebang)
+.githooks/* text eol=lf

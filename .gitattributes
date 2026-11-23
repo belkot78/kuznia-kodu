@@ -1,0 +1,6 @@
+# Skrypty sh (hooki git i instalator): zawsze LF (CRLF psuje shebang)
+.githooks/* text eol=lf
+szablon/.githooks/* text eol=lf
+instaluj/*.sh text eol=lf
+# Lacznik (git apply) musi miec LF, inaczej kontekst sie nie zgadza
+*.patch text eol=lf

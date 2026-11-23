@@ -1,0 +1,29 @@
+#!/bin/sh
+# Hook pre-push: uruchamia tools/przeglad.py (testy, sekrety, importy i adresy, niebezpieczne wywolania)
+# i blokuje push przy FAIL. Nie czyta dane/ (przeglad.py bierze liste plikow z git ls-files).
+# Brak Pythona = blokada (fail closed). Bez --no-verify.
+# Wlaczenie (Pawel, raz na klon): git config core.hooksPath .githooks
+cd "$(git rev-parse --show-toplevel)" || exit 1
+NAZWA=$(basename "$PWD")
+PY=""
+# Kolejnosc: venv uzytkownika (<home>/.venvs/<nazwa-repo>), .venv repo, potem python z PATH.
+for K in "$HOME/.venvs/$NAZWA/Scripts/python.exe" "$HOME/.venvs/$NAZWA/bin/python" \
+         ".venv/Scripts/python.exe" ".venv/bin/python"; do
+    if [ -x "$K" ]; then PY="$K"; break; fi
+done
+if [ -z "$PY" ]; then
+    for K in python3 python py; do
+        if command -v "$K" >/dev/null 2>&1; then PY="$K"; break; fi
+    done
+fi
+if [ -z "$PY" ] || ! "$PY" -c "import sys" >/dev/null 2>&1; then
+    echo "PUSH ZABLOKOWANY - nie znaleziono dzialajacego Pythona." >&2
+    exit 1
+fi
+"$PY" tools/przeglad.py
+kod=$?
+if [ "$kod" -ne 0 ]; then
+    echo "PUSH ZABLOKOWANY - tools/przeglad.py zwrocil FAIL (kod $kod). Popraw wyniki powyzej." >&2
+    exit 1
+fi
+exit 0

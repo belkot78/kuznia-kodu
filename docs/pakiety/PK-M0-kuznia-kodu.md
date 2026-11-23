@@ -100,4 +100,19 @@ Nie zmieniaj niczego w `ekosystem` ani `pathchaser-studio`.
 - Szablon przechodzi własne testy.
 
 ## Log
-(uzupełnia wykonawca)
+Wykonawca: Claude Code (Sonnet), 23.11.2026.
+
+**Zrobione (commity lokalne, etapy 1-5 i poprawki):**
+- Etap 1: inwentaryzacja w `docs/prywatne/inwentaryzacja.md` (poza gitem, decyzja Pawła): 17 OGÓLNE, 13 SPECYFICZNE, 17 ROZBIEŻNOŚCI; decyzje Pawła R2, R5, R14, R17 wdrożone. Lista nazw zakazanych: `docs/prywatne/zakazane_nazwy.txt` (poza gitem).
+- Etap 2: plugin `kuznia` (marketplace `kuznia-kodu`, `source: "./"`, bo instalacja kopiuje tylko katalog pluginu), agent `recenzent`, 5 skilli, hooki Python.
+- Etap 3: `szablon/` (settings, CLAUDE.md, docs, `przeglad.py` + `przeglad_konfig.py`, testy, hooki git w `sh`), `szablon-uzytkownika/`.
+- Etap 4: `maszyny/`, `instaluj/windows.ps1` (tryb `-Sprawdz`, test dostępu jako agent, ostrzeżenie o wpisach (N)), `instaluj/linux.sh` (szkic). Skryptów nie uruchamiano.
+- Etap 5: README, CHANGELOG 0.3, „Propozycje do METODA” (§13, treści §0-12 bez zmian), test repo publicznego, `docs/po-pk-m0.patch`.
+
+**Testy:** `python -m pytest testy` = 79 passed, 1 skipped (test zgodności `.claude/settings.json` z szablonem pomija się do nałożenia łącznika); testy szablonu (w tym w `testy/test_szablon.py`) 80 passed.
+
+**Recenzja:** runda 1 `ODRZUCAM` (bloker: nazwa brokera w teście publicznym; bloker: kontrola pomijała pliki z polskimi znakami w nazwie; ponadto uwaga o obejściu blokad w profilu agenta, decyzja Pawła). Poprawki w pakiecie: atrapa bez nazwy, `git ... -z` i UTF-8 w `przeglad.py` z testami. Runda 2 `ZATWIERDZAM Z UWAGAMI`. Wejście dla recenzenta: pliki `.recenzja/diff-*.patch` (odstępstwo od zlecenia, które mówiło o wklejaniu: diff 3475 linii; recenzent przeczytał pliki w całości, nic się nie urwało).
+
+**Decyzje wykonawcy:** (1) po dokumentacji plugin nie instaluje się sam z `enabledPlugins` w ustawieniach projektu: README i skill opisują instalację przez `claude plugin install ... --scope project` (korekta METODA §5 w §13 propozycji); (2) `szablon/tools/przeglad.py`: w repo bez commitów wszystkie pliki są nowe; (3) z listy prywatnej usunięto `lokalne.yaml` (występuje w plikach startowych Pawła i w METODA §9 jako przykład).
+
+**Odłożone:** `docs/porzadki.md`, sekcja „Z PK-M0” (15 uwag, w tym 2 decyzje Pawła).

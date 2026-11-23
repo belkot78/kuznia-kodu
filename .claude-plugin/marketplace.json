@@ -1,0 +1,11 @@
+{
+  "name": "kuznia-kodu",
+  "owner": { "name": "belkot78" },
+  "plugins": [
+    {
+      "name": "kuznia",
+      "source": "./",
+      "description": "Metoda pracy: wykonawca Sonnet, recenzent Opus. Agent recenzent, skille pakiet, status, nowy-projekt, przenies, retro, hooki kontrolne."
+    }
+  ]
+}

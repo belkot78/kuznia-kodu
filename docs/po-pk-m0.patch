@@ -1,0 +1,192 @@
+diff --git a/.claude/settings.json b/.claude/settings.json
+index b90346a..9e13208 100644
+--- a/.claude/settings.json
++++ b/.claude/settings.json
+@@ -3,30 +3,157 @@
+   "permissions": {
+     "defaultMode": "acceptEdits",
+     "allow": [
+-      "Bash(git status*)",
+-      "Bash(git log*)",
+-      "Bash(git diff*)",
+-      "Bash(git show*)",
+-      "Bash(git rev-parse*)"
++      "Bash(git status *)",
++      "Bash(git log *)",
++      "Bash(git diff *)",
++      "Bash(git show *)",
++      "Bash(git branch)",
++      "Bash(git branch -a)",
++      "Bash(git branch --show-current)",
++      "Bash(git rev-parse *)",
++      "Bash(python -m pytest *)",
++      "Bash(python tools/przeglad.py *)",
++      "Bash(python tools/tests/test_*.py *)",
++      "Bash(.venv/Scripts/python.exe -m pytest *)",
++      "Bash(.venv/Scripts/python.exe tools/przeglad.py *)",
++      "Bash(.venv/Scripts/python.exe tools/tests/test_*.py *)",
++      "Bash(/c/Users/claude-agent/.venvs/kuznia-kodu/Scripts/python.exe -m pytest *)",
++      "Bash(/c/Users/claude-agent/.venvs/kuznia-kodu/Scripts/python.exe tools/przeglad.py *)",
++      "Bash(/c/Users/claude-agent/.venvs/kuznia-kodu/Scripts/python.exe tools/tests/test_*.py *)"
+     ],
+     "deny": [
+-      "Read(**/.env*)",
+-      "Read(**/dane/**)",
+-      "Read(**/lokalne.yaml)",
++      "PowerShell",
++      "Read(**/.env)",
++      "Read(**/.env.local)",
++      "Read(**/.env.*.local)",
++      "Read(**/.env.prod*)",
++      "Read(**/.env.dev*)",
++      "Read(**/.env.test*)",
++      "Read(**/.env.staging*)",
++      "Read(**/.env.bak*)",
++      "Read(**/.env.backup*)",
++      "Read(**/.env.old*)",
++      "Read(**/*.sqlite3*)",
++      "Read(**/*.sqlite)",
++      "Read(**/*.db)",
+       "Read(**/*.pem)",
+       "Read(**/*.key)",
+-      "Read(**/*.db)",
+-      "Read(**/*.sqlite*)",
+-      "Bash(git push --force*)",
+-      "Bash(git push -f*)",
++      "Read(**/dane/**)",
++      "Bash(git push --force *)",
++      "Bash(git push -f *)",
++      "Bash(git push *--force*)",
+       "Bash(git * --output*)",
+-      "Bash(git commit --no-verify*)",
+-      "Bash(git commit -n*)"
++      "Bash(* --basetemp*)",
++      "Bash(* --junitxml*)",
++      "Bash(* pytest * -p *)",
++      "Bash(git commit *--no-verify*)",
++      "Bash(git commit *--no-v*)",
++      "Bash(git commit -n*)",
++      "Bash(git commit * -n *)",
++      "Bash(git commit * -n)",
++      "Bash(git commit *-an*)",
++      "Bash(git commit *-na*)",
++      "Bash(git commit *-qn*)",
++      "Bash(git commit *-nq*)",
++      "Bash(git commit *-sn*)",
++      "Bash(git commit *-ns*)",
++      "Bash(git commit *-nm*)",
++      "Bash(git -* commit *)",
++      "Bash(git *hooksPath*)",
++      "Bash(rm *.claude/settings*)",
++      "Bash(rm *.claude/hooks*)",
++      "Bash(rm *.claude/agents*)",
++      "Bash(rm *.claude/skills*)",
++      "Bash(rm *.git/hooks*)",
++      "Bash(rm *.git/config*)",
++      "Bash(rm *.githooks*)",
++      "Bash(rm *przeglad.py*)",
++      "Bash(rm *przeglad_konfig*)",
++      "Bash(rmdir *.claude/settings*)",
++      "Bash(rmdir *.claude/hooks*)",
++      "Bash(rmdir *.claude/agents*)",
++      "Bash(rmdir *.claude/skills*)",
++      "Bash(rmdir *.git/hooks*)",
++      "Bash(rmdir *.git/config*)",
++      "Bash(rmdir *.githooks*)",
++      "Bash(rmdir *przeglad.py*)",
++      "Bash(rmdir *przeglad_konfig*)",
++      "Bash(mv *.claude/settings*)",
++      "Bash(mv *.claude/hooks*)",
++      "Bash(mv *.claude/agents*)",
++      "Bash(mv *.claude/skills*)",
++      "Bash(mv *.git/hooks*)",
++      "Bash(mv *.git/config*)",
++      "Bash(mv *.githooks*)",
++      "Bash(mv *przeglad.py*)",
++      "Bash(mv *przeglad_konfig*)",
++      "Bash(cp *.claude/settings*)",
++      "Bash(cp *.claude/hooks*)",
++      "Bash(cp *.claude/agents*)",
++      "Bash(cp *.claude/skills*)",
++      "Bash(cp *.git/hooks*)",
++      "Bash(cp *.git/config*)",
++      "Bash(cp *.githooks*)",
++      "Bash(cp *przeglad.py*)",
++      "Bash(cp *przeglad_konfig*)",
++      "Bash(sed *.claude/settings*)",
++      "Bash(sed *.claude/hooks*)",
++      "Bash(sed *.claude/agents*)",
++      "Bash(sed *.claude/skills*)",
++      "Bash(sed *.git/hooks*)",
++      "Bash(sed *.git/config*)",
++      "Bash(sed *.githooks*)",
++      "Bash(sed *przeglad.py*)",
++      "Bash(sed *przeglad_konfig*)",
++      "Bash(touch *.claude/settings*)",
++      "Bash(touch *.claude/hooks*)",
++      "Bash(touch *.claude/agents*)",
++      "Bash(touch *.claude/skills*)",
++      "Bash(touch *.git/hooks*)",
++      "Bash(touch *.git/config*)",
++      "Bash(touch *.githooks*)",
++      "Bash(touch *przeglad.py*)",
++      "Bash(touch *przeglad_konfig*)",
++      "Bash(mkdir *.claude/settings*)",
++      "Bash(mkdir *.claude/hooks*)",
++      "Bash(mkdir *.claude/agents*)",
++      "Bash(mkdir *.claude/skills*)",
++      "Bash(mkdir *.git/hooks*)",
++      "Bash(mkdir *.git/config*)",
++      "Bash(mkdir *.githooks*)",
++      "Bash(mkdir *przeglad.py*)",
++      "Bash(mkdir *przeglad_konfig*)"
+     ],
+     "ask": [
+-      "Bash(git push*)",
+-      "Bash(git add*)",
+-      "Bash(git commit*)"
++      "Bash(git push *)",
++      "Bash(git add *)",
++      "Bash(git commit *)",
++      "Edit(/.claude/settings.json)",
++      "Edit(/.claude/settings.local.json)",
++      "Edit(/.claude/hooks/**)",
++      "Edit(/.claude/agents/**)",
++      "Edit(/.claude/skills/**)",
++      "Edit(/.githooks/**)",
++      "Edit(/tools/przeglad.py)",
++      "Edit(/tools/przeglad_konfig.py)",
++      "Edit(/tools/tests/test_settings.py)",
++      "Edit(/.git/**)"
+     ]
++  },
++  "deniedMcpServers": [
++    {
++      "serverUrl": "*://*/*"
++    }
++  ],
++  "extraKnownMarketplaces": {
++    "kuznia-kodu": {
++      "source": {
++        "source": "github",
++        "repo": "belkot78/kuznia-kodu"
++      }
++    }
++  },
++  "enabledPlugins": {
++    "kuznia@kuznia-kodu": true
+   }
+ }
+diff --git a/.gitignore b/.gitignore
+index fcdf6bc..364d4bc 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -15,8 +15,5 @@ __pycache__/
+ dane/
+ lokalne.yaml
+ 
+-# Tymczasowa kopia recenzenta z ekosystemu (tylko na czas PK-M0, nie publikujemy)
+-.claude/agents/
+-
+ # Inwentaryzacja zawiera nazwy specyficzne dla projektow - nie trafia do gita
+ docs/prywatne/
