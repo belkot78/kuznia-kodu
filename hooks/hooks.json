@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/kontrola.py\" post",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/uruchom.sh\" post",
             "timeout": 10
           }
         ]
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/kontrola.py\" stop",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/uruchom.sh\" stop",
             "timeout": 300
           }
         ]

@@ -1,6 +1,9 @@
 """Testy statyczne pluginu kuznia: JSON marketplace i pluginu, agent, skille, hooki (offline)."""
 import json
+import os
 import re
+import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -104,16 +107,37 @@ def test_skill_retro_nie_zmienia_metody_samodzielnie():
     assert "CHANGELOG.md" in tresc
 
 
-def test_hooks_json_tylko_python():
+def test_hooks_json_przez_przenosny_launcher():
+    """Hook `command` idzie na Windows przez Git Bash, a na Linuksie przez sh: launcher wybiera python3/python/py."""
     h = wczytaj("hooks/hooks.json")["hooks"]
     assert set(h) == {"PostToolUse", "Stop"}
     komendy = [x["command"] for wpis in (h["PostToolUse"] + h["Stop"]) for x in wpis["hooks"]]
     assert len(komendy) == 2
     for k in komendy:
-        assert k.startswith('python "${CLAUDE_PLUGIN_ROOT}/hooks/kontrola.py"')
-        assert "powershell" not in k.lower() and ".ps1" not in k
+        assert k.startswith('sh "${CLAUDE_PLUGIN_ROOT}/hooks/uruchom.sh"')     # placeholder w cudzyslowie
+        assert not k.startswith("python") and "powershell" not in k.lower() and ".ps1" not in k
     assert h["PostToolUse"][0]["matcher"] == "Edit|Write|MultiEdit"
     assert (KORZEN / "hooks" / "kontrola.py").is_file()
+
+
+def test_launcher_hookow_wybiera_interpreter_i_przekazuje_argumenty():
+    tresc = (KORZEN / "hooks" / "uruchom.sh").read_text(encoding="utf-8")
+    assert tresc.startswith("#!/bin/sh") and "\r" not in tresc
+    assert "python3 python py" in tresc
+    assert 'exec "$kandydat" "$KATALOG/kontrola.py" "$@"' in tresc          # stdin i argumenty bez zmian
+    assert "exit 1" in tresc                                                 # brak interpretera: blad nieblokujacy
+    assert "powershell" not in tresc.lower()
+
+
+def test_launcher_hookow_ma_poprawna_skladnie_i_uruchamia_kontrole(tmp_path):
+    sh = shutil.which("sh")
+    if not sh:
+        pytest.skip("brak sh w PATH")
+    launcher = KORZEN / "hooks" / "uruchom.sh"
+    assert subprocess.run([sh, "-n", str(launcher)], capture_output=True).returncode == 0
+    w = subprocess.run([sh, str(launcher), "post"], input='{"tool_input": {}}', capture_output=True, text=True,
+                       cwd=str(tmp_path), env={**os.environ, "CLAUDE_PROJECT_DIR": str(tmp_path)})
+    assert w.returncode == 0, w.stderr
 
 
 def test_plugin_nie_dostarcza_uprawnien():
@@ -121,3 +145,28 @@ def test_plugin_nie_dostarcza_uprawnien():
     assert not (KORZEN / "settings.json").exists()
     for rel in (".claude-plugin/plugin.json", ".claude-plugin/marketplace.json", "hooks/hooks.json"):
         assert "permissions" not in wczytaj(rel)
+
+
+def test_wersja_pluginu_0_4_0():
+    assert wczytaj(".claude-plugin/plugin.json")["version"] == "0.4.0"
+
+
+def test_skill_nowy_projekt_ma_kolejnosc_plugin_przed_blokadami():
+    _, tresc = frontmatter(KORZEN / "skills" / "nowy-projekt" / "SKILL.md")
+    sekcja = tresc[tresc.index("## 3. Plugin"):tresc.index("## 4. Sprawdź")]
+    assert sekcja.index("claude plugin install") < sekcja.index("Przywróć plik: `git checkout -- .claude/settings.json`")
+    assert tresc.index("## 3. Plugin") < tresc.index("windows.ps1 -Repo") < tresc.index("-TestAgenta")
+    for fragment in ("▶ WKLEJ", "👁 POWINIENEŚ ZOBACZYĆ", "claude-agent", "Belkot", "safe.directory", ".gitattributes"):
+        assert fragment in tresc, fragment
+
+
+def test_skill_status_ostrzega_o_kolejnosci_kluczy_i_wersji_pluginu():
+    _, tresc = frontmatter(KORZEN / "skills" / "status" / "SKILL.md")
+    assert "git checkout -- .claude/settings.json" in tresc and "kolejnością kluczy" in tresc
+    assert "plugin.json" in tresc and "nie wiem" in tresc
+
+
+def test_skill_pakiet_ma_konwencje_krokow_pawla_i_lacznik_z_blokadami():
+    _, tresc = frontmatter(KORZEN / "skills" / "pakiet" / "SKILL.md")
+    assert "▶ WKLEJ" in tresc and "👁 POWINIENEŚ ZOBACZYĆ" in tresc
+    assert "-TestAgenta" in tresc and "ponowne założenie blokad" in tresc

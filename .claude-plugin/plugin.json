@@ -1,5 +1,5 @@
 {
   "name": "kuznia",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Metoda kuznia-kodu: agent recenzent (Opus, tylko odczyt), skille pakiet, status, nowy-projekt, przenies, retro oraz hooki kontrolne w Pythonie."
 }

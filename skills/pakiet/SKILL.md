@@ -28,11 +28,11 @@ Pokaż krótki plan: etapy, pliki do zmiany, co uruchomisz, w których momentach
   c) potrzebna jest zmiana poza zakresem pakietu albo w plikach kontrolnych (`.claude/`, hooki git, `tools/przeglad.py`, skan sekretów, `test_settings.py`);
   d) ten sam błąd nie ustępuje po 2 próbach naprawy;
   e) coś wygląda na incydent (np. przypadkowe uruchomienie czegoś na żywym systemie): natychmiast, z opisem, bez prób naprawy.
-- Zmiana pliku kontrolnego zablokowanego przez system (błąd EPERM): przygotuj `docs/pakiety/$ARGUMENTS-<plik>.patch` i zatrzymaj się; Paweł zrobi `git apply --check`, `git apply`, `git diff` i ponownie założy blokadę, potem robisz commit.
+- Zmiana pliku kontrolnego zablokowanego przez system (błąd EPERM): przygotuj `docs/pakiety/$ARGUMENTS-<plik>.patch` i zatrzymaj się; Paweł zrobi `git apply --check`, `git apply`, `git diff` i ponownie założy blokadę, potem robisz commit. Kroki Pawła podaj w konwencji z punktu „Raport” niżej (▶ WKLEJ / 👁 POWINIENEŚ ZOBACZYĆ, z kontem), razem z ponownym założeniem blokad i `-TestAgenta` (git zapisuje plik od nowa i blokada znika).
 
 ## 3. Bramka końcowa
 1. Testy offline i `python tools/przeglad.py` (interpreter agenta): oba muszą dać PASS.
-2. Przygotuj wejście dla recenzenta: katalog `.recenzja/` (jest w `.gitignore`) i diff bazy `origin/…` ze zmianami: `git diff @{upstream}..HEAD > .recenzja/diff.patch`. Gdy gałąź nie ma upstreamu, podaj bazę jawnie (commit startowy pakietu). Jeśli przekierowanie do pliku zostanie odrzucone przez uprawnienia, NIE poszerzaj allow: wklej diff w polecenie dla recenzenta (przy dużym diffie po etapach) i odnotuj to w raporcie jako ograniczenie.
+2. Przygotuj wejście dla recenzenta: katalog `.recenzja/` (jest w `.gitignore`) i diff względem gałęzi śledzonej: `git diff @{upstream}..HEAD > .recenzja/diff.patch`. Gdy gałąź nie ma upstreamu, podaj bazę jawnie (commit startowy pakietu). Jeśli przekierowanie do pliku zostanie odrzucone przez uprawnienia, NIE poszerzaj allow: wklej diff w polecenie dla recenzenta (przy dużym diffie po etapach) i odnotuj to w raporcie jako ograniczenie.
 3. Wywołaj agenta `recenzent` (z pluginu `kuznia`; typ w Agent tool: `kuznia:recenzent`, a gdy go nie ma na liście, `recenzent`). Podaj mu: zlecenie pakietu, `docs/recenzja-projekt.md` i ścieżkę `.recenzja/diff.patch`. Recenzent nie ma narzędzi do uruchamiania poleceń; to, czego nie da się sprawdzić bez uruchomienia, sprawdzasz Ty.
 4. Uwagi BLOKUJĄCE klas: sekret; dostęp do danych poza zakresem projektu; zapis lub akcja na żywym systemie zewnętrznym; złamanie kontraktu lub ADR; klasy dopisane w `docs/recenzja-projekt.md`. Poprawiasz i wołasz recenzenta jeszcze raz. **Najwyżej jedna dodatkowa runda**; jeśli po niej nadal są blokery, zatrzymujesz się i opisujesz, bez dalszego łatania. Inne blokery opisujesz w raporcie; decyzja należy do Pawła.
 5. Pozostałe uwagi nie wracają do poprawek: dopisujesz każdą jedną linią do `docs/porzadki.md`, w sekcji „Z $ARGUMENTS” (utwórz sekcję, jeśli jej nie ma).
@@ -42,4 +42,10 @@ Pokaż krótki plan: etapy, pliki do zmiany, co uruchomisz, w których momentach
 - Zaktualizuj `docs/stan.md`: status pakietu, testy, ryzyka, otwarte pytania, kolejny pakiet.
 - Commit lokalny.
 - Raport końcowy dla Pawła: co zmieniono, wyniki testów i `przeglad.py`, werdykt recenzenta, odłożone uwagi, `git diff --stat @{upstream}..HEAD` i komenda push (według `CLAUDE.md`). Dodaj, że po zmianie ustawień, hooków lub skilli Paweł restartuje sesję Claude Code (nowe reguły działają dopiero w nowej sesji).
+- **Kroki Pawła w raporcie** pisz w stałym układzie, osobno dla każdego kroku:
+  - **▶ WKLEJ**: blok kodu do wklejenia, zawsze z nazwą konta i okna (np. „konto Belkot, PowerShell”, „konto claude-agent”);
+  - **👁 POWINIENEŚ ZOBACZYĆ**: zwykły tekst z oczekiwanym wynikiem, nigdy do wklejania.
+
+  Przy rozbieżności Paweł zatrzymuje się i wkleja wynik. Polecenia sesji (`/exit` i inne) wpisuje Paweł, nie wkładasz ich do poleceń dla agenta.
+- Jeśli w pakiecie jest łatka na pliki kontrolne (`.claude/`, `.githooks/`, `.git/config`, `tools/przeglad.py`, `tools/przeglad_konfig.py`, `tools/tests/test_settings.py`), raport zawiera w tym układzie: `git apply --check`, `git apply`, `git diff`, ponowne założenie blokad (`instaluj\windows.ps1 -Repo <repo>`, konto administratora) i test `instaluj\windows.ps1 -TestAgenta` (konto claude-agent), a potem restart sesji.
 - Oznaczaj stwierdzenia: `FACT`, `PROPOSED`, `OPEN QUESTION`, `IDEA`.
