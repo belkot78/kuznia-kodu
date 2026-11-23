@@ -37,6 +37,22 @@ Projekt prowadzony metodą `kuznia-kodu` (plugin `kuznia`): wykonawca Sonnet, re
 - Nie zgaduj. W dokumentach oznaczaj stwierdzenia: `FACT`, `PROPOSED`, `OPEN QUESTION`, `IDEA`.
 - Zakres i kolejność pakietów wg `docs/pakiety/`; nie rozbudowuj zakresu na własną rękę.
 
+## Metoda
+
+Skille pluginu `kuznia` wywołuje człowiek (model ich nie widzi), zawsze z przedrostkiem:
+- `/kuznia:status`: stan repo i środowiska, na początku sesji;
+- `/kuznia:pakiet PK-XX`: wykonanie pakietu (plan, praca, bramka końcowa z recenzentem, log, raport);
+- `/kuznia:nowy-projekt`: założenie projektu według `METODA.md` sekcja 10;
+- `/kuznia:przenies`: przeniesienie aplikacji na inną maszynę (według `docs/wdrozenie.md`);
+- `/kuznia:retro`: wnioski do zmiany metody (zmiany zasad idą tylko tą drogą).
+
+Zasady:
+- Etykiety stwierdzeń (w dokumentach i raportach): `FACT` (sprawdzone), `PROPOSED` (do potwierdzenia), `OPEN QUESTION` (decyzja do podjęcia), `IDEA` (pomysł na później).
+- Opisy commitów po polsku, **tylko ASCII** (bez polskich liter).
+- Zmian zasad metody nie robisz sam: dopisz „Propozycję do METODA” w logu pakietu.
+- Kroki dla Pawła piszesz w stałym układzie: **▶ WKLEJ** (blok do wklejenia, z nazwą konta i okna) i **👁 POWINIENEŚ ZOBACZYĆ** (oczekiwany wynik, zwykły tekst).
+- Po zmianie ustawień, hooków lub skilli Paweł restartuje sesję Claude Code (nowe reguły działają dopiero w nowej sesji).
+
 ## Jak zaczynać sesję
 
 - Na początku sesji uruchom `/kuznia:status`. Pakiet uruchamia `/kuznia:pakiet PK-XX`.

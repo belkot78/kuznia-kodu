@@ -65,3 +65,25 @@ def test_szablon_przeglad_na_samym_sobie_nie_zglasza_sekretow():
         sys.modules.pop("przeglad", None)
         sys.modules.pop("przeglad_konfig", None)
     assert ok, uwagi
+
+
+def test_gitattributes_szablonu_wymusza_lf():
+    tekst = (SZABLON / ".gitattributes").read_text(encoding="utf-8")
+    linie = [l.strip() for l in tekst.splitlines() if l.strip() and not l.startswith("#")]
+    assert "* text=auto eol=lf" in linie
+    assert ".githooks/* text eol=lf" in linie        # dotychczasowa regula zostaje
+
+
+def test_gitignore_szablonu_ma_recenzje_i_prywatne():
+    linie = (SZABLON / ".gitignore").read_text(encoding="utf-8").splitlines()
+    assert ".recenzja/" in linie and "docs/prywatne/" in linie
+
+
+def test_claude_md_szablonu_ma_sekcje_metoda():
+    tekst = (SZABLON / "CLAUDE.md").read_text(encoding="utf-8")
+    assert "## Metoda" in tekst
+    for skill in ("status", "pakiet", "nowy-projekt", "przenies", "retro"):
+        assert f"/kuznia:{skill}" in tekst, skill
+    for etykieta in ("FACT", "PROPOSED", "OPEN QUESTION", "IDEA"):
+        assert etykieta in tekst, etykieta
+    assert "ASCII" in tekst

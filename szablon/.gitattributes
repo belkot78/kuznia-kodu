@@ -1,2 +1,5 @@
 # Skrypty sh instalowane jako hooki git: zawsze LF (CRLF psuje shebang)
 .githooks/* text eol=lf
+
+# Wszystkie pliki tekstowe zawsze LF (CRLF psuje pliki pluginu i nagłówki agenta)
+* text=auto eol=lf

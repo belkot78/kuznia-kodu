@@ -1,8 +1,9 @@
-"""Ustawienia tego repo (.claude/settings.json) po nalozeniu docs/po-pk-m0.patch musza byc zgodne z szablonem.
+"""Ustawienia tego repo (.claude/settings.json) musza byc zgodne z szablonem po podstawieniu znacznikow.
 
-Przed nalozeniem lacznika w repo jest tymczasowy plik startowy (bez pluginu): test jest wtedy pomijany.
-Po nalozeniu (robi Pawel po pushu) sprawdza, ze listy allow/deny/ask i wpisy pluginu sa takie jak w szablonie
-po podstawieniu znacznikow ({{VENV_PYTHON}}, {{GALAZ}}).
+`.claude/` jest plikiem kontrolnym (blokada zapisu dla agenta), wiec zmiany w szablonie dochodza tu lacznikiem
+`docs/pakiety/PK-M0.1-claude.patch`, ktory naklada Pawel. Dopoki lacznik jest nienalozony (`git apply --check`
+przechodzi w przod), test zgodnosci jest pomijany z jawnym komunikatem; po nalozeniu (albo gdy lacznik juz nie pasuje)
+zgodnosc jest wymagana bez wyjatkow.
 """
 import json
 import subprocess
@@ -13,7 +14,7 @@ import pytest
 KORZEN = Path(__file__).resolve().parents[1]
 USTAWIENIA = KORZEN / ".claude" / "settings.json"
 SZABLON = KORZEN / "szablon" / ".claude" / "settings.json"
-PATCH = KORZEN / "docs" / "po-pk-m0.patch"
+LACZNIK = KORZEN / "docs" / "pakiety" / "PK-M0.1-claude.patch"
 VENV_PYTHON = "/c/Users/claude-agent/.venvs/kuznia-kodu/Scripts/python.exe"
 
 
@@ -31,32 +32,28 @@ def git(*argumenty):
                           capture_output=True, text=True, encoding="utf-8", errors="replace")
 
 
-def czy_docelowe():
-    return "enabledPlugins" in wczytaj(USTAWIENIA)
+def lacznik_nienalozony():
+    return LACZNIK.is_file() and git("apply", "--check", str(LACZNIK)).returncode == 0
 
 
-def test_lacznik_po_pk_m0_istnieje_i_jest_poprawny():
-    """Albo jeszcze nienalozony (git apply --check przechodzi), albo juz nalozony (przechodzi odwrotnie)."""
-    assert PATCH.is_file()
-    nalozony = git("apply", "--check", "-R", str(PATCH)).returncode == 0
-    nienalozony = git("apply", "--check", str(PATCH)).returncode == 0
-    assert nalozony or nienalozony
+def test_lacznik_claude_zmienia_tylko_ustawienia():
+    if not LACZNIK.is_file():
+        pytest.skip("lacznik PK-M0.1-claude.patch juz nalozony i usuniety")
+    pliki = [l.split(" b/")[-1] for l in LACZNIK.read_text(encoding="utf-8").splitlines() if l.startswith("diff --git")]
+    assert pliki == [".claude/settings.json"]
 
 
-def test_lacznik_zmienia_tylko_ustawienia_i_gitignore():
-    pliki = [l.split(" b/")[-1] for l in PATCH.read_text(encoding="utf-8").splitlines() if l.startswith("diff --git")]
-    assert sorted(pliki) == [".claude/settings.json", ".gitignore"]
+def test_lacznik_claude_jest_poprawny():
+    """Albo nienalozony (git apply --check przechodzi), albo juz nalozony (przechodzi odwrotnie)."""
+    if not LACZNIK.is_file():
+        pytest.skip("lacznik PK-M0.1-claude.patch usuniety po nalozeniu")
+    nalozony = git("apply", "--check", "-R", str(LACZNIK)).returncode == 0
+    assert nalozony or lacznik_nienalozony()
 
 
-def test_lacznik_usuwa_wpis_o_tymczasowej_kopii_recenzenta():
-    tekst = PATCH.read_text(encoding="utf-8")
-    assert "-.claude/agents/" in tekst
-    assert "enabledPlugins" in tekst
-
-
-def test_ustawienia_po_nalozeniu_lacznika_zgodne_z_szablonem():
-    if not czy_docelowe():
-        pytest.skip("tymczasowe ustawienia startowe: lacznik docs/po-pk-m0.patch jeszcze nienalozony")
+def test_ustawienia_repo_zgodne_z_szablonem():
+    if lacznik_nienalozony():
+        pytest.skip("OCZEKUJE NA PAWLA: docs/pakiety/PK-M0.1-claude.patch jeszcze nienalozony (git apply)")
     obecne, wzor = wczytaj(USTAWIENIA), oczekiwane()
     for klucz in ("model", "deniedMcpServers", "extraKnownMarketplaces", "enabledPlugins"):
         assert obecne[klucz] == wzor[klucz], klucz

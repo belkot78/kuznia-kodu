@@ -21,3 +21,7 @@ __pycache__/
 dane/
 logi/
 logs/
+lokalne.yaml
+
+# Dokumenty prywatne (nazwy specyficzne dla projektu, inwentaryzacje) - poza gitem
+docs/prywatne/

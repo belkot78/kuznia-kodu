@@ -36,11 +36,14 @@ DENY_NARZEDZIE_POWERSHELL = ["PowerShell"]   # narzedzie PowerShell wylaczone (r
 DENY_ODCZYT = [
     "Read(**/.env)", "Read(**/.env.local)", "Read(**/.env.*.local)", "Read(**/.env.prod*)", "Read(**/.env.dev*)",
     "Read(**/.env.test*)", "Read(**/.env.staging*)", "Read(**/.env.bak*)", "Read(**/.env.backup*)",
-    "Read(**/.env.old*)",
+    "Read(**/.env.old*)", "Read(**/.env.secrets*)", "Read(**/.env.ci*)",
+    "Read(**/lokalne.yaml)", "Read(**/settings.local.json)",
     "Read(**/*.sqlite3*)", "Read(**/*.sqlite)", "Read(**/*.db)",
     "Read(**/*.pem)", "Read(**/*.key)", "Read(**/dane/**)",
 ]
 DENY_PUSH = ["Bash(git push --force *)", "Bash(git push -f *)", "Bash(git push *--force*)"]
+# `git diff --no-index <plik> NUL` czyta dowolny plik z dysku i omija deny odczytu (git diff * jest w allow)
+DENY_DIFF_NO_INDEX = ["Bash(git diff *--no-index*)"]
 # zapis dowolnych plikow przez git/pytest (git log/diff/show * w allow obejmuje --output, pytest --basetemp
 # czysci katalog, --junitxml nadpisuje plik, -p laduje plugin)
 DENY_ZAPIS_PRZEZ_NARZEDZIA = ["Bash(git * --output*)", "Bash(* --basetemp*)", "Bash(* --junitxml*)",
@@ -67,7 +70,8 @@ SCIEZKI_CHRONIONE = ["*.claude/settings*", "*.claude/hooks*", "*.claude/agents*"
                      "*.git/hooks*", "*.git/config*", "*.githooks*", "*przeglad.py*", "*przeglad_konfig*"]
 DENY_ZAPIS_CHRONIONE = [f"Bash({w} {s})" for w in POLECENIA_ZAPISU for s in SCIEZKI_CHRONIONE]
 
-WYMAGANE_DENY = (DENY_NARZEDZIE_POWERSHELL + DENY_ODCZYT + DENY_PUSH + DENY_ZAPIS_PRZEZ_NARZEDZIA
+WYMAGANE_DENY = (DENY_NARZEDZIE_POWERSHELL + DENY_ODCZYT + DENY_PUSH + DENY_DIFF_NO_INDEX
+                 + DENY_ZAPIS_PRZEZ_NARZEDZIA
                  + (DENY_MAIN_I_TAGI if WARIANT_DEV else []) + DENY_POMIJANIE_HOOKA + DENY_ZAPIS_CHRONIONE)
 
 # --- ask: push, add, commit i edycja plikow konfiguracji i kontroli
@@ -139,6 +143,17 @@ def test_deny_zapisu_nie_blokuje_uruchamiania_przegladu(perm):
 def test_deny_odczytu_sekretow_komplet(perm):
     for fragment in (".env", "sqlite", "*.db", "*.pem", "*.key", "dane/"):
         assert [r for r in perm["deny"] if r.startswith("Read(") and fragment in r], fragment
+
+
+def test_deny_odczytu_wariantow_env_i_konfiguracji_lokalnej(perm):
+    for r in ("Read(**/.env.secrets*)", "Read(**/.env.ci*)", "Read(**/lokalne.yaml)",
+              "Read(**/settings.local.json)"):
+        assert r in perm["deny"], r
+
+
+def test_deny_git_diff_no_index(perm):
+    """`git diff --no-index` omija deny odczytu (czyta dowolny plik), a `git diff *` jest w allow."""
+    assert "Bash(git diff *--no-index*)" in perm["deny"]
 
 
 def test_env_example_nie_jest_blokowany(perm):
