@@ -36,6 +36,79 @@ def test_windows_ps1_blokady_metoda_net_a_nie_icacls_deny(ps):
         assert zakazane not in prawa
 
 
+def kod_bez_komentarzy(ps):
+    kod = re.sub(r"<#.*?#>", "", ps, flags=re.S)
+    return "\n".join(l for l in kod.splitlines() if not l.lstrip().startswith("#"))
+
+
+def test_windows_ps1_blokady_przez_getaccesscontrol_a_nie_set_acl(ps):
+    """#7 z porzadkow: Set-Acl probuje zapisac tez wlasciciela; blokady maja isc przez GetAccessControl('Access')."""
+    kod = kod_bez_komentarzy(ps)
+    assert "GetAccessControl($SekcjaDostep)" in kod and "SetAccessControl($acl)" in kod
+    assert "AccessControlSections]'Access'" in kod
+    assert not re.search(r"\bSet-Acl\b", kod)
+    assert not re.search(r"\bGet-Acl\b", kod)
+    blok = kod[kod.index("function Set-BlokadaZapisu"):kod.index("function Add-RegulaJesliBrak")]
+    assert "SetAccessControl" in blok and "Set-Acl" not in blok
+
+
+def test_windows_ps1_instalacja_wymaga_repo(ps):
+    kod = kod_bez_komentarzy(ps)
+    assert "[string[]]$Repo" in ps
+    assert re.search(r"\$instalacjaRepo -and \$Repo\.Count -eq 0", kod)
+    zajawka = kod[kod.index("$instalacjaRepo -and"):]
+    assert "exit 2" in zajawka[:600]               # komunikat i wyjscie, zanim cokolwiek zostanie zmienione
+    assert "Get-ChildItem -LiteralPath $KatalogRepo" in kod   # domyslne repo tylko dla -Sprawdz i -TestAgenta
+
+
+def test_windows_ps1_nie_blokuje_katalogu_pluginu(ps):
+    kod = kod_bez_komentarzy(ps)
+    for linia in kod.splitlines():
+        if "Set-BlokadaZapisu" in linia and not linia.lstrip().startswith("function"):
+            assert "luginu" not in linia and "$Plugin" not in linia, linia
+    assert "Set-BlokadaZapisu $katalogPluginu" not in kod
+    assert "Test-ZgodnoscPluginu" in kod and "Get-FileHash" in kod        # wykrywanie zamiast zapobiegania
+    assert "CLAUDE.md agenta" in kod and "Test-CrlfPluginu" in kod
+
+
+def test_windows_ps1_ma_tryb_testagenta(ps):
+    kod = kod_bez_komentarzy(ps)
+    assert "[switch]$TestAgenta" in ps
+    assert "WindowsIdentity]::GetCurrent().Name" in kod and "whoami" in ps
+    assert "deniedMcpServers" in kod
+    assert "'CreateNew', 'Write'" in kod and "'Open', 'Write'" in kod        # test zapisu plikow kontrolnych
+    assert "safe.directory" in kod and "git config --global --add safe.directory" in kod
+    assert "DozwoloneFolderyC" in kod and "$env:SystemDrive" in kod          # wszystkie foldery na C:\
+    assert "Test-Crlf" in kod and "Test-SafeDirectory" in kod
+
+
+def test_windows_ps1_bez_start_process_credential(ps):
+    kod = kod_bez_komentarzy(ps)
+    assert "Start-Process" not in kod and "-Credential" not in kod and "Get-Credential" not in kod
+    assert "UTF8" in kod                                    # #8b: polskie znaki w wyniku programow zewnetrznych
+
+
+def test_windows_ps1_tryb_instalacji_katalogu_projektow(ps):
+    kod = kod_bez_komentarzy(ps)
+    assert "[switch]$InstalujKatalogProjektow" in ps
+    assert "'InheritOnly'" in kod and "'Deny'" in kod and "'FullControl'" in kod
+    assert "'Modify'" in kod and "'Allow'" in kod
+
+
+def test_windows_ps1_sprawdz_bez_ostrzezenia_o_pustych_wpisach_n(ps):
+    """(N) w icacls to pelny zakaz (METODA 0.4, sekcja 12), a nie pusty wpis."""
+    kod = kod_bez_komentarzy(ps)
+    assert "pusty wpis" not in kod.lower() and "Szukaj-PustychWpisow" not in kod
+    assert "bez blokady" in kod                              # foldery w katalogu projektow bez blokady
+
+
+def test_windows_ps1_kolejnosc_w_pomocy_plugin_przed_blokadami(ps):
+    pomoc = ps[:ps.index("[CmdletBinding()]")]
+    assert pomoc.index("claude plugin install") < pomoc.index("-Repo <repo> (blokady)")
+    assert "NAJPIERW plugin, POTEM blokady" in pomoc
+    assert "-TestAgenta" in pomoc[pomoc.index("(blokady)"):]            # przypomnienie o tescie po instalacji
+
+
 def test_windows_ps1_nie_tworzy_konta_ani_nie_poszerza_uprawnien(ps):
     for niedozwolone in ("New-LocalUser", "net user", "Add-LocalGroupMember", "net localgroup",
                          "Set-ExecutionPolicy", "Invoke-WebRequest", "Invoke-Expression", "iex "):
@@ -43,11 +116,9 @@ def test_windows_ps1_nie_tworzy_konta_ani_nie_poszerza_uprawnien(ps):
     assert "NIE tworzy" in ps or "nie tworzy" in ps
 
 
-def test_windows_ps1_ma_tryb_sprawdz_z_testem_dostepu_i_ostrzezeniem_n(ps):
+def test_windows_ps1_ma_tryb_sprawdz_i_test_dostepu(ps):
     assert "[switch]$Sprawdz" in ps
     assert "DOSTEP" in ps and "odmowa" in ps
-    assert "-Credential" in ps                    # test wykonywany JAKO agent
-    assert "(N)" in ps and "[int]$r.FileSystemRights -eq 0" in ps    # pusty wpis: zezwolenie bez praw
     assert "bez blokady" in ps                    # nowo zalozone foldery w katalogu projektow
     assert "_repo" in ps and "KatalogRepo" in ps
 
