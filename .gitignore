@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Wejscie recenzenta (tymczasowe)
+.recenzja/
+
+# Lokalne ustawienia Claude Code i sekrety - nigdy w publicznym repo
+.claude/settings.local.json
+.env*
+*.pem
+*.key
+dane/
+lokalne.yaml
+
+# Tymczasowa kopia recenzenta z ekosystemu (tylko na czas PK-M0, nie publikujemy)
+.claude/agents/
