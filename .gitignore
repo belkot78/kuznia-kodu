@@ -15,8 +15,5 @@ __pycache__/
 dane/
 lokalne.yaml
 
-# Tymczasowa kopia recenzenta z ekosystemu (tylko na czas PK-M0, nie publikujemy)
-.claude/agents/
-
 # Inwentaryzacja zawiera nazwy specyficzne dla projektow - nie trafia do gita
 docs/prywatne/
