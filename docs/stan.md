@@ -6,10 +6,11 @@ Oznaczenia: `FACT`, `PROPOSED`, `OPEN QUESTION`, `IDEA`. Aktualizuje wykonawca n
 | Pakiet | Stan | Uwagi |
 |---|---|---|
 | PK-M0 | wykonany i wypchnięty | plugin, szablon, maszyny, instalacja; recenzja: ZATWIERDZAM Z UWAGAMI (runda 2); log w pakiecie |
-| PK-M0.1 | wykonany lokalnie, czeka na push i kroki Pawła | poprawki po pierwszym użyciu, METODA 0.4, plugin 0.4.0; werdykt recenzenta i log w pakiecie |
+| PK-M0.1 | wykonany lokalnie, czeka na push i kroki Pawła | poprawki po pierwszym użyciu, METODA 0.4, plugin 0.4.0; recenzja: runda 1 ODRZUCAM (bloker poprawiony), runda 2 ZATWIERDZAM Z UWAGAMI; log w pakiecie |
 
 ## Testy
-- `FACT`: `python -m pytest testy` i `python -m pytest szablon/tools/tests` przechodzą (liczby w logu pakietu PK-M0.1).
+- `FACT`: `python -m pytest testy`: 102 passed, 2 skipped; `python -m pytest szablon/tools/tests`: 86 passed. `przeglad.py` na repo kuźni: (b) i (d) PASS, (c) FAIL od atrapy `obcy.invalid` w istniejącym teście (fałszywy alarm, `porzadki.md`).
+- `OPEN QUESTION`: `-Sprawdz` da fałszywe `[BLAD]` od `szablon\.pytest_cache` w drzewie roboczym (uwaga z rundy 2); przed `-Sprawdz` usuń ten katalog.
 - `FACT`: test zgodności `.claude/settings.json` tego repo z szablonem jest **pomijany** do czasu nałożenia `docs/pakiety/PK-M0.1-claude.patch` (komunikat „OCZEKUJE NA PAWŁA”); po nałożeniu wymaga zgodności.
 - `FACT`: test repo publicznego pomija sprawdzenie listy nazw zakazanych, bo na tej maszynie nie ma `docs/prywatne/zakazane_nazwy.txt` (kontrola niepełna: tylko wzorce ogólne).
 

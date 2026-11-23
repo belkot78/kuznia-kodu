@@ -100,3 +100,27 @@ Każdą pozycję albo poprawiasz, albo zamykasz z uzasadnieniem. Pozycje „[DEC
 
 ## Log
 (uzupełnia wykonawca)
+
+### Wykonanie (23.11.2026, Sonnet)
+
+**Zrobiono (5 etapów, commity lokalne):**
+1. Szablon: `.gitattributes` z LF, deny (`.env.secrets*`, `.env.ci*`, `lokalne.yaml`, `settings.local.json`, `git diff *--no-index*`), asercje w `test_settings.py`, sekcja „Metoda” w `CLAUDE.md`, `.gitignore`. Łatka `docs/pakiety/PK-M0.1-claude.patch` dla `.claude/settings.json` tego repo (plik kontrolny, czeka na Pawła).
+2. `instaluj/windows.ps1` przepisany: `GetAccessControl('Access')`/`SetAccessControl()`, `-Repo` wymagane, plugin i `CLAUDE.md` agenta bez blokady (wykrywanie skrótów), `-Sprawdz` bez ostrzeżenia o `(N)`, `-InstalujKatalogProjektow`, `-TestAgenta`, bez `Start-Process -Credential`, UTF-8. Skryptu nie uruchamiano ani nie parsowano.
+3. Plugin 0.4.0: `hooks/uruchom.sh` (launcher `python3`/`python`/`py`), skille `nowy-projekt`, `status`, `pakiet`.
+4. Pozycje z `porzadki.md`: wszystkie mają status (sekcja „Statusy po PK-M0.1”); poprawione m.in. #4, #6 (`ACMRT`), r2 #1-#3, #7, #9, #10.
+5. Dokumentacja: `README.md`, `CHANGELOG.md` (0.4.0), `docs/stan.md`, `maszyny/minipc.md`, `szablon-uzytkownika/` (CLAUDE.md, `settings.json`, `profile.ps1`), `CLAUDE.md` i `docs/recenzja-projekt.md` kuźni, usunięty `docs/po-pk-m0.patch`.
+
+**Decyzje wykonawcy:**
+- `.claude\CLAUDE.md` agenta też bez blokady (METODA 0.4 sekcja 8: blokada pliku nie chroni przy pełnych prawach do katalogu nadrzędnego); zlecenie wymieniało wprost tylko katalog pluginu.
+- `settings.json` i profil PowerShell agenta instalator kopiuje tylko, gdy ich brak (nie nadpisuje); `-TestAgenta` wymaga `deniedMcpServers` (BLAD) i zgodności `CLAUDE.md` (BLAD), a profilu tylko ostrzega.
+- Hooki: shell form `sh "${CLAUDE_PLUGIN_ROOT}/hooks/uruchom.sh"`; wybór oparty na dokumentacji (Windows: Git Bash, bez niego PowerShell; kod 127 nieblokujący).
+- `nowy-projekt`: pliki szablonu trzeba dodać do indeksu (`git add`) przed instalacją pluginu, inaczej `git checkout -- .claude/settings.json` nie ma do czego wrócić.
+- Z polecenia Pawła: `CLAUDE.md` i `docs/recenzja-projekt.md` kuźni założone w etapie 5 (poza zleceniem); `maszyny/legion.md` pominięty (OPEN QUESTION w `stan.md`); lista nazw zakazanych nie istnieje, test publiczny zgłasza niepełną kontrolę.
+
+**Testy:** `python -m pytest testy`: 102 passed, 2 skipped (lista nazw zakazanych; zgodność `.claude/settings.json` do nałożenia łatki). `python -m pytest szablon/tools/tests`: 86 passed. `przeglad.py` na repo kuźni: (b) sekrety PASS, (d) PASS, (c) FAIL z powodu atrapy `obcy.invalid` w istniejącym teście (fałszywy alarm, w `porzadki.md`).
+
+**Recenzja:** runda 1: ODRZUCAM (bloker: `Test-Blokada` liczył reguły odziedziczone, przy wzorcu katalogu projektów dawał fałszywe OK; poprawione). Runda 2: ZATWIERDZAM Z UWAGAMI (nowe uwagi w `porzadki.md`, sekcja „Z PK-M0.1”: m.in. fałszywe `[BLAD]` od `szablon\.pytest_cache`).
+
+**Odłożono:** uwagi w `docs/porzadki.md`, sekcja „Z PK-M0.1”; `maszyny/legion.md`; parser i przegląd `windows.ps1` przez Pawła/czat.
+
+**Propozycje do METODA:** (1) sekcja 10 krok 5: przed `claude plugin install` pliki szablonu muszą być w indeksie, inaczej `git checkout -- .claude/settings.json` nie zadziała; (2) `-TestAgenta` wymaga polityki wykonywania pozwalającej wczytać profil, by czerwony znak zachęty działał (`OPEN QUESTION`).
