@@ -87,3 +87,39 @@ def test_claude_md_szablonu_ma_sekcje_metoda():
     for etykieta in ("FACT", "PROPOSED", "OPEN QUESTION", "IDEA"):
         assert etykieta in tekst, etykieta
     assert "ASCII" in tekst
+
+
+UZYTKOWNIKA = KORZEN / "szablon-uzytkownika"
+
+
+def test_szablon_uzytkownika_ma_wzor_ustawien_i_profilu_agenta():
+    import json
+    ustawienia = json.loads((UZYTKOWNIKA / "settings.json").read_text(encoding="utf-8"))
+    assert ustawienia["deniedMcpServers"] == [{"serverUrl": "*://*/*"}]
+    profil = (UZYTKOWNIKA / "profile.ps1").read_text(encoding="utf-8")
+    assert profil.isascii()
+    assert "[AGENT@" in profil and "-ForegroundColor Red" in profil and "Set-Location $HOME" in profil
+
+
+def test_szablon_uzytkownika_claude_md_ma_skille_z_przedrostkiem():
+    tresc = (UZYTKOWNIKA / "CLAUDE.md").read_text(encoding="utf-8")
+    for skill in ("pakiet", "status", "nowy-projekt", "przenies", "retro"):
+        assert f"/kuznia:{skill}" in tresc, skill
+    import re
+    assert not re.search(r"(?<![:\w])/(pakiet|status|nowy-projekt|przenies|retro)\b", tresc)   # bez formy bez przedrostka
+
+
+def test_instalator_zna_pliki_szablonu_uzytkownika():
+    ps = (KORZEN / "instaluj" / "windows.ps1").read_text(encoding="utf-8")
+    for plik in ("CLAUDE.md", "settings.json", "profile.ps1"):
+        assert (UZYTKOWNIKA / plik).is_file()
+        assert plik in ps, plik
+
+
+def test_kuznia_ma_wlasne_claude_md_i_recenzje_projektu():
+    claude = (KORZEN / "CLAUDE.md").read_text(encoding="utf-8")
+    assert "P0" in claude and "publiczne" in claude and "ASCII" in claude and "main" in claude
+    recenzja = (KORZEN / "docs" / "recenzja-projekt.md").read_text(encoding="utf-8")
+    assert "**P0**" in recenzja
+    assert "repo publicznego z METODA sekcja 5" in recenzja          # dodatkowa klasa blokera
+    assert "{{" not in claude and "{{" not in recenzja
